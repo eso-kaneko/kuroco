@@ -1,37 +1,25 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-import { parseStringPromise } from 'xml2js';
-
-const feedUrl = 'https://kankeinai.blog.jp/index.rdf';
-const items = ref([]);
-
-onMounted(async () => {
-  try {
-    const response = await fetch(feedUrl);
-    const xmlText = await response.text();
-    const parsed = await parseStringPromise(xmlText, { explicitArray: false });
-
-    // RDF形式のRSSは、データが `rdf:RDF` の中に `item` として存在
-    const feedItems = parsed['rdf:RDF']?.['item'];
-
-    // `feedItems` がオブジェクトの場合は配列化
-    items.value = Array.isArray(feedItems) ? feedItems : [feedItems];
-
-    console.log("パース後のデータ:", items.value);
-  } catch (error) {
-    console.error("RSS取得エラー:", error);
-  }
-});
-</script>
-
 <template>
   <div>
-    <h2>RSS フィード</h2>
-    <ul v-if="items.length">
-      <li v-for="item in items" :key="item.link">
-        <a :href="item.link" target="_blank">{{ item.title }}</a>
+    <h1>RSS フィード</h1>
+    <ul>
+      <li v-for="item in rssItems" :key="item.link">
+        <h2><a :href="item.link" target="_blank">{{ item.title }}</a></h2>
+        <p><strong>日時:</strong> {{ item.date }}</p>
+        <p><strong>カテゴリ:</strong> {{ item.subject }}</p>
+        <div v-html="item.content"></div>
+        <hr />
       </li>
     </ul>
-    <p v-else>データがありません。</p>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRss } from "~/composables/useRss";  // RSS取得関数をインポート
+
+const rssItems = ref([]);
+
+onMounted(async () => {
+  rssItems.value = await useRss();
+});
+</script>
