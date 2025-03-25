@@ -1,40 +1,27 @@
+<script setup>
+import { parseStringPromise } from 'xml2js';
+
+const feedUrl = 'https://kankeinai.blog.jp/index.rdf'; // RSSのURL
+const { data, error } = await useFetch(feedUrl, {
+  transform: async (xml) => {
+    if (!xml) return null;
+    return await parseStringPromise(xml, { explicitArray: false });
+  }
+});
+
+const items = data.value?.rdf?.RDF?.item || []; // RSSのアイテムを取得
+
+console.log("パース後のデータ:", items);
+</script>
+
 <template>
   <div>
-    <h1>RSS フィード</h1>
-    <div v-if="error">
-      <p>データの取得に失敗しました。</p>
-    </div>
-    <div v-if="isFetching">
-      <p>読み込み中...</p>
-    </div>
-    <div v-if="data && !isFetching">
-      <!-- 取得したデータが存在する場合に表示 -->
-      <ul v-if="data.value && data.value.items">
-        <li v-for="(item, index) in data.value.items" :key="index">
-          <h2>{{ item.title }}</h2>
-          <a :href="item.link" target="_blank">詳細はこちら</a>
-          <p>{{ item.description }}</p>
-        </li>
-      </ul>
-      <!-- データがない場合 -->
-      <p v-else>データがありません。</p>
-    </div>
+    <h2>RSS フィード</h2>
+    <ul v-if="items.length">
+      <li v-for="item in items" :key="item.link">
+        <a :href="item.link">{{ item.title }}</a>
+      </li>
+    </ul>
+    <p v-else>データがありません。</p>
   </div>
 </template>
-
-<script setup>
-const feedUrl = 'https://kankeinai.blog.jp/index.rdf' // 使用するRSSフィードのURL
-
-// useFetch を使って RSS フィードを取得
-const { data, error, isFetching } = useFetch(feedUrl)
-
-// dataがRef型で返ってきた場合、valueプロパティを使う
-if (data.value) {
-  console.log('データ:', data.value) // ここで実際に取得したデータを確認する
-}
-
-// エラーが発生した場合、コンソールにエラーメッセージを表示
-if (error) {
-  console.error('API エラー:', error)
-}
-</script>
