@@ -1,25 +1,25 @@
 <template>
-  <div>
-    <h1>RSS フィード</h1>
-    <ul>
-      <li v-for="item in rssItems" :key="item.link">
-        <h2><a :href="item.link" target="_blank">{{ item.title }}</a></h2>
-        <p><strong>日時:</strong> {{ item.date }}</p>
-        <p><strong>カテゴリ:</strong> {{ item.subject }}</p>
-        <div v-html="item.content"></div>
-        <hr />
-      </li>
-    </ul>
-  </div>
+    <div>
+        <img :src="response.details.ext_1.url" width="800">
+        <div>{{ response.details.ext_2 }}</div>
+        <div>{{ response.details.ext_3 }}</div>
+
+        <div v-for="n in response.details.ext_4" :key="n.slag">
+            <img :src="n.ext_4.url" width="400">
+            <div>{{ n.ext_3 }}</div>
+            <div>{{ n.ext_5 }}</div>
+            <div>{{ n.ext_6 }}</div>
+        </div>
+    </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRss } from "~/composables/useRss";  // RSS取得関数をインポート
+const config = useRuntimeConfig();
 
-const rssItems = ref([]);
-
-onMounted(async () => {
-  rssItems.value = await useRss();
-});
+const { data: response } = await useFetch(
+    `${config.public.apiBase}/rcms-api/4/service/4`,
+    {
+        credentials: 'include',
+    }
+);
 </script>
